@@ -2,11 +2,9 @@ package com.rundeck.feature.systemactions.actions;
 
 import com.rundeck.feature.api.action.FeatureAction;
 import com.rundeck.feature.api.context.FeatureActionContext
-import com.rundeck.feature.api.event.ActionCompleteEvent
 import com.rundeck.feature.api.event.ActionEventPublisher
 import com.rundeck.feature.api.model.CompletionStatus
 import com.rundeck.feature.api.output.OutputLevel
-import com.rundeck.feature.systemactions.events.CompleteEvent
 import com.rundeck.feature.systemactions.events.LogActionOutputEvent
 import groovy.sql.Sql;
 import org.springframework.context.ApplicationContext;
@@ -74,10 +72,13 @@ public class RunSqlScriptFeatureAction implements FeatureAction<RunSqlScriptFeat
             (1..meta.columnCount).each {
                 headers.add(meta.getColumnLabel(it))
             }
+            b.append(headers.join(","))
+            b.append('\n')
         }
-        b.append(headers.join(","))
+
         def rowOut = { rs ->
             b.append(rs.toRowResult().values().join(","))
+            b.append('\n')
         }
         sql.eachRow(data.sql, data.params, metaOut, rowOut)
         eventPublisher.publishOutput(new LogActionOutputEvent(actionId: id, message: b.toString()))
