@@ -21,9 +21,16 @@ public class SystemActionsFeature implements Feature<SystemActionsFeatureConfig>
     boolean enabled;
     SystemActionsFeatureConfig config;
 
+    SqsMessageListenerService sqsMessageListenerService;
+
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Provides actions that can do system maintenance and support";
     }
 
     @Override
@@ -34,16 +41,22 @@ public class SystemActionsFeature implements Feature<SystemActionsFeatureConfig>
     @Override
     public void enable() {
         enabled = true;
+        if(config.isEnableSqsListener()) {
+            if(sqsMessageListenerService == null) sqsMessageListenerService = new SqsMessageListenerService(config);
+            sqsMessageListenerService.start();
+        }
     }
 
     @Override
     public void disable() {
         enabled = false;
+        cleanup();
     }
 
     @Override
     public void cleanup() {
-
+        if(sqsMessageListenerService != null) sqsMessageListenerService.stop();
+        sqsMessageListenerService = null;
     }
 
     @Override
@@ -59,6 +72,10 @@ public class SystemActionsFeature implements Feature<SystemActionsFeatureConfig>
     @Override
     public void configure(SystemActionsFeatureConfig systemActionsFeatureConfig) {
         config = systemActionsFeatureConfig;
+        cleanup();
+        if(config.isEnableSqsListener()) {
+            sqsMessageListenerService = new SqsMessageListenerService(config);
+        }
     }
 
     @Override
