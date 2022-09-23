@@ -19,7 +19,7 @@ public class SystemActionsFeature implements Feature<SystemActionsFeatureConfig>
             DispatchSystemMessageFeatureAction.NAME, new DispatchSystemMessageFeatureAction());
 
     boolean enabled;
-    SystemActionsFeatureConfig config;
+    SystemActionsFeatureConfig config = new SystemActionsFeatureConfig();
 
     SqsMessageListenerService sqsMessageListenerService;
 
