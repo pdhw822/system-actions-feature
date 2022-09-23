@@ -22,8 +22,8 @@ class DispatchSystemMessageFeatureAction implements FeatureAction<DispatchSystem
 
     @Override
     CompletionStatus execute(FeatureActionContext featureActionContext) {
+        def evtPublisher = featureActionContext.eventPublisher
         try {
-            def evtPublisher = featureActionContext.eventPublisher
             def data = featureActionContext.get(FeatureActionContext.KEY_ACTION_DATA, DispatchSystemMessageFeatureActionData)
 
             ApplicationContext ctx = featureActionContext.get("spring-context", ApplicationContext.class);
@@ -34,7 +34,8 @@ class DispatchSystemMessageFeatureAction implements FeatureAction<DispatchSystem
 
             return CompletionStatus.SUCCESS
         } catch(Exception ex) {
-
+            ex.printStackTrace()
+            evtPublisher.publishOutput(new LogActionOutputEvent(actionId: featureActionContext.actionId, message: ex.cause?.message?:ex.message))
         }
         return CompletionStatus.ERROR
     }
@@ -46,6 +47,6 @@ class DispatchSystemMessageFeatureAction implements FeatureAction<DispatchSystem
 
     @Override
     DispatchSystemMessageFeatureActionData getSampleActionData() {
-        return new DispatchSystemMessageFeatureActionData(topic: "clean-executions", payload: [cleanOlderThan: "2022-09-01"])
+        return new DispatchSystemMessageFeatureActionData(topic: "clean-executions", payload: '{"cleanOlderThan": "2022-09-01"}')
     }
 }

@@ -94,5 +94,5 @@ public class RunSqlScriptFeatureAction implements FeatureAction<RunSqlScriptFeat
         return SAMPLE;
     }
 
-    public static final RunSqlScriptFeatureActionData SAMPLE = new RunSqlScriptFeatureActionData(sql:"SELECT count(*) FROM projects WHERE date_created > ?", params:["2022-01-01"]);
+    public static final RunSqlScriptFeatureActionData SAMPLE = new RunSqlScriptFeatureActionData(sql:"SELECT count(*) FROM project WHERE date_created > ?", params:["2022-01-01"]);
 }
