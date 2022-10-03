@@ -1,10 +1,12 @@
 package com.rundeck.feature.systemactions
 
 import software.amazon.awssdk.regions.Region
+import spock.lang.Requires
 import spock.lang.Specification
 
 class SqsMessageListenerServiceSpec extends Specification {
 
+    @Requires({System.getProperty("test.sqs").equals("yes")})
     def "service test"() {
         setup:
         SystemActionsFeatureConfig config = new SystemActionsFeatureConfig()

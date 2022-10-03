@@ -4,7 +4,6 @@ package com.rundeck.feature.systemactions;
 import com.rundeck.feature.api.Feature;
 import com.rundeck.feature.api.action.FeatureAction;
 import com.rundeck.feature.systemactions.actions.DispatchSystemMessageFeatureAction;
-import com.rundeck.feature.systemactions.actions.RunSqlScriptFeatureAction;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -15,8 +14,7 @@ import java.util.Optional;
 public class SystemActionsFeature implements Feature<SystemActionsFeatureConfig> {
     public static final String NAME = "system-actions";
 
-    Map<String, FeatureAction<?>> actions = Map.of(RunSqlScriptFeatureAction.NAME, new RunSqlScriptFeatureAction(),
-            DispatchSystemMessageFeatureAction.NAME, new DispatchSystemMessageFeatureAction());
+    Map<String, FeatureAction<?>> actions = Map.of(DispatchSystemMessageFeatureAction.NAME, new DispatchSystemMessageFeatureAction());
 
     boolean enabled;
     SystemActionsFeatureConfig config = new SystemActionsFeatureConfig();
