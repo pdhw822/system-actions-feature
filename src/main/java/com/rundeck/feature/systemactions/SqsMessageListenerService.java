@@ -27,7 +27,7 @@ public class SqsMessageListenerService {
     public SqsMessageListenerService(SystemActionsFeatureConfig config) {
         this.config = config;
         sqsClient = SqsClient.builder()
-                .region(config.getAwsRegion())
+                .region(Region.of(config.getAwsRegion()))
                 .build();
         Map<QueueAttributeName, String> attributes = new HashMap<>();
         attributes.put(QueueAttributeName.RECEIVE_MESSAGE_WAIT_TIME_SECONDS, "20");

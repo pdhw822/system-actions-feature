@@ -5,15 +5,15 @@ import software.amazon.awssdk.regions.Region;
 public class SystemActionsFeatureConfig {
 
     private boolean enableSqsListener;
-    private Region awsRegion;
+    private String awsRegion;
     private String awsSqsQueue;
     private Integer messagePollTimeoutSeconds = 20;
 
-    public Region getAwsRegion() {
+    public String getAwsRegion() {
         return awsRegion;
     }
 
-    public void setAwsRegion(Region awsRegion) {
+    public void setAwsRegion(String awsRegion) {
         this.awsRegion = awsRegion;
     }
 
