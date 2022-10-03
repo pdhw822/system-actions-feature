@@ -1,5 +1,11 @@
 package com.rundeck.feature.systemactions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rundeck.feature.systemactions.events.DefaultExecuteFeatureActionEvent;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.message.ObjectMessage;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -14,7 +20,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class SqsMessageListenerService {
+    private final ApplicationEventPublisher eventPublisher;
     ExecutorService exec;
     AtomicBoolean shutdown = new AtomicBoolean(false);
 
@@ -22,9 +30,11 @@ public class SqsMessageListenerService {
     private SystemActionsFeatureConfig config;
     private String queueUrl;
 
+    ObjectMapper mapper = new ObjectMapper();
     public List<String> receivedMessages = new ArrayList<>();
 
-    public SqsMessageListenerService(SystemActionsFeatureConfig config) {
+    public SqsMessageListenerService(ApplicationEventPublisher eventPublisher, SystemActionsFeatureConfig config) {
+        this.eventPublisher = eventPublisher;
         this.config = config;
         sqsClient = SqsClient.builder()
                 .region(Region.of(config.getAwsRegion()))
@@ -58,7 +68,6 @@ public class SqsMessageListenerService {
                             .build();
 
                     var rsp = sqsClient.receiveMessage(receiveRequest);
-                    System.out.println("\n\n===RECEIVED MESSAGES===\n\n");
                     handleQueueMessage(rsp);
                 } catch(Exception ex) {
                     ex.printStackTrace();
@@ -75,11 +84,21 @@ public class SqsMessageListenerService {
         rqb.queueUrl(queueUrl);
         List<DeleteMessageBatchRequestEntry> deleteEntries = new ArrayList<>();
         rsp.messages().forEach(m -> {
-            receivedMessages.add(m.body());
+            String payload = m.body();
+            try {
+                processMessage(payload);
+            } catch(Exception ex) {
+                log.error(String.format("Failed to process message: %s", payload), ex);
+            }
             deleteEntries.add(DeleteMessageBatchRequestEntry.builder().id(m.messageId()).receiptHandle(m.receiptHandle()).build());
         });
         rqb.entries(deleteEntries);
         if(!deleteEntries.isEmpty()) sqsClient.deleteMessageBatch(rqb.build());
+    }
+
+    void processMessage(String msg) throws JsonProcessingException {
+        var executeEvent = mapper.readValue(msg, DefaultExecuteFeatureActionEvent.class);
+        eventPublisher.publishEvent(executeEvent);
     }
 
     public void stop() {

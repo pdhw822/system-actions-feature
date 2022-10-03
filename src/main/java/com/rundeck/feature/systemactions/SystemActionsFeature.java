@@ -4,6 +4,8 @@ package com.rundeck.feature.systemactions;
 import com.rundeck.feature.api.Feature;
 import com.rundeck.feature.api.action.FeatureAction;
 import com.rundeck.feature.systemactions.actions.DispatchSystemMessageFeatureAction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -12,6 +14,9 @@ import java.util.Optional;
 
 @Component
 public class SystemActionsFeature implements Feature<SystemActionsFeatureConfig> {
+
+    @Autowired
+    ApplicationEventPublisher applicationEventPublisher;
     public static final String NAME = "system-actions";
 
     Map<String, FeatureAction<?>> actions = Map.of(DispatchSystemMessageFeatureAction.NAME, new DispatchSystemMessageFeatureAction());
@@ -40,7 +45,7 @@ public class SystemActionsFeature implements Feature<SystemActionsFeatureConfig>
     public void enable() {
         enabled = true;
         if(config.isEnableSqsListener()) {
-            if(sqsMessageListenerService == null) sqsMessageListenerService = new SqsMessageListenerService(config);
+            if(sqsMessageListenerService == null) sqsMessageListenerService = new SqsMessageListenerService(applicationEventPublisher,config);
             sqsMessageListenerService.start();
         }
     }
@@ -72,7 +77,7 @@ public class SystemActionsFeature implements Feature<SystemActionsFeatureConfig>
         config = systemActionsFeatureConfig;
         cleanup();
         if(config.isEnableSqsListener()) {
-            sqsMessageListenerService = new SqsMessageListenerService(config);
+            sqsMessageListenerService = new SqsMessageListenerService(applicationEventPublisher,config);
         }
     }
 
