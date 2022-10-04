@@ -2,12 +2,9 @@ package com.rundeck.feature.systemactions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rundeck.feature.api.event.ActionEventPublisher;
 import com.rundeck.feature.systemactions.events.DefaultExecuteFeatureActionEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.message.ObjectMessage;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.*;
@@ -22,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 public class SqsMessageListenerService {
-    private final ApplicationEventPublisher eventPublisher;
+    private final ActionEventPublisher eventPublisher;
     ExecutorService exec;
     AtomicBoolean shutdown = new AtomicBoolean(false);
 
@@ -33,7 +30,7 @@ public class SqsMessageListenerService {
     ObjectMapper mapper = new ObjectMapper();
     public List<String> receivedMessages = new ArrayList<>();
 
-    public SqsMessageListenerService(ApplicationEventPublisher eventPublisher, SystemActionsFeatureConfig config) {
+    public SqsMessageListenerService(ActionEventPublisher eventPublisher, SystemActionsFeatureConfig config) {
         this.eventPublisher = eventPublisher;
         this.config = config;
         sqsClient = SqsClient.builder()
@@ -98,7 +95,7 @@ public class SqsMessageListenerService {
 
     void processMessage(String msg) throws JsonProcessingException {
         var executeEvent = mapper.readValue(msg, DefaultExecuteFeatureActionEvent.class);
-        eventPublisher.publishEvent(executeEvent);
+        eventPublisher.publishExecuteFeatureAction(executeEvent);
     }
 
     public void stop() {

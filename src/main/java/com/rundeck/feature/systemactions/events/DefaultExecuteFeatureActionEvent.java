@@ -12,5 +12,5 @@ public class DefaultExecuteFeatureActionEvent implements ExecuteFeatureActionEve
     String feature;
     String action;
     String user;
-    Map<String,Object> actionData;
+    String actionDataJson;
 }
